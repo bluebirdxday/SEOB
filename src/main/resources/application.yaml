@@ -1,0 +1,21 @@
+#DataBase
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 0191
+    url: jdbc:postgresql://localhost:5432/seob
+  jpa:
+    hibernate:
+#     ddl-auto: validate
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+
+
+
