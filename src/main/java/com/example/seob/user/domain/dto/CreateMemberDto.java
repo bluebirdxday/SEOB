@@ -9,7 +9,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-public class CreateUserDto {
+public class CreateMemberDto {
 
     @Getter
     @AllArgsConstructor
@@ -28,8 +28,8 @@ public class CreateUserDto {
         @Size(min = 2, max = 30)
         private String name;
 
-        public UserDto toDto() {
-            return UserDto.of(null, email, password, name, LocalDateTime.now(), null, null, null);
+        public MemberDto toDto() {
+            return MemberDto.of(null, email, password, name, null);
         }
     }
 
@@ -38,25 +38,25 @@ public class CreateUserDto {
     @AllArgsConstructor
     public static class Response {
 
-        private Long userId;
+        private Long memberId;
         private String email;
         private String name;
         private LocalDateTime createdAt;
 
         public static Response of(
-                Long userId,
+                Long memberId,
                 String email,
                 String name,
                 LocalDateTime createdAt
         ) {
-            return new Response(userId, email, name, createdAt);
+            return new Response(memberId, email, name, createdAt);
         }
 
-        public static Response fromDto(UserDto userDto) {
+        public static Response fromDto(MemberDto userDto) {
             if (userDto == null) return null;
 
             return Response.of(
-                    userDto.getUserId(),
+                    userDto.getMemberId(),
                     userDto.getEmail(),
                     userDto.getName(),
                     userDto.getCreatedAt()

@@ -1,4 +1,4 @@
-package com.example.seob.constant;
+package com.example.seob.global.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

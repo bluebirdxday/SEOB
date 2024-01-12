@@ -7,7 +7,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/seob
   jpa:
     hibernate:
-#     ddl-auto: validate
+      #     ddl-auto: validate
       ddl-auto: create-drop
     properties:
       hibernate:
@@ -16,6 +16,14 @@ spring:
         default_batch_fetch_size: 100
     open-in-view: false
 
+  #Redis Cache
+  redis:
+    host: localhost
+    port: 6379
+
+
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHN
 
 
 

@@ -1,6 +1,6 @@
 package com.example.seob.global.response;
 
-import com.example.seob.constant.ErrorCode;
+import com.example.seob.global.constant.ErrorCode;
 import lombok.*;
 
 import java.time.LocalDateTime;

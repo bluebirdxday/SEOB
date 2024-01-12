@@ -25,7 +25,7 @@ public class ApiDataResponse<T> {
     public static <T> ApiDataResponse<T> of(T data) {
         return new ApiDataResponse<>(data);
     }
-    
+
     public static <T> ApiDataResponse<T> ok() {
         return new ApiDataResponse<>(null, HttpStatus.OK);
     }
