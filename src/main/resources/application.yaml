@@ -26,4 +26,10 @@ jwt:
   secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHN
 
 
+logging:
+  level:
+    org.hibernate.SQL: info
+    org.hibernate.type: info
 
+  file:
+    Path: ./logs
