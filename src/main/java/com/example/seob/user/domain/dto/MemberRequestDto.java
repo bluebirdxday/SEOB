@@ -3,7 +3,6 @@ package com.example.seob.user.domain.dto;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -29,11 +28,8 @@ public class MemberRequestDto {
     @Getter
     public static class Logout {
 
-        @NotEmpty(message = "잘못된 요청입니다.")
+        @NotBlank(message = "accessToken을 입력해주세요.")
         private String accessToken;
-
-        @NotEmpty(message = "잘못된 요청입니다.")
-        private String refreshToken;
     }
 
     @Getter

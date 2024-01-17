@@ -1,6 +1,7 @@
 package com.example.seob.user.validator;
 
-import com.example.seob.global.exception.ApiRequestException;
+import com.example.seob.global.constant.ErrorCode;
+import com.example.seob.global.exception.CustomException;
 import com.example.seob.user.domain.dto.MemberDto;
 import com.example.seob.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,12 @@ public class MemberValidator {
 
     public void validateUserEmailExists(MemberDto memberDto) {
         if (memberRepository.existsByEmail(memberDto.getEmail()))
-            throw new ApiRequestException("이미 사용중인 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
     }
 
     public void findByEmailAndPassword(MemberDto memberDto) {
         memberRepository.findByEmail(memberDto.getEmail())
                 .filter(foundMember -> encoder.matches(memberDto.getPassword(), foundMember.getPassword()))
-                .orElseThrow(() -> new ApiRequestException("이메일 혹은 비밀번호가 일치하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.MISMATCH_ID_OR_PASSWORD));
     }
 }

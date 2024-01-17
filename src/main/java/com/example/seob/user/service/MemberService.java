@@ -1,7 +1,8 @@
 package com.example.seob.user.service;
 
+import com.example.seob.global.constant.ErrorCode;
 import com.example.seob.global.enumeration.Authority;
-import com.example.seob.global.exception.ApiRequestException;
+import com.example.seob.global.exception.CustomException;
 import com.example.seob.jwt.JwtProperties;
 import com.example.seob.jwt.JwtTokenProvider;
 import com.example.seob.user.domain.dto.MemberDto;
@@ -10,6 +11,7 @@ import com.example.seob.user.domain.dto.MemberResponseDto;
 import com.example.seob.user.repository.MemberRepository;
 import com.example.seob.user.validator.MemberValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -22,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -75,7 +78,7 @@ public class MemberService {
     public MemberResponseDto.TokenInfo reissue(MemberRequestDto.Reissue reissueRequest) {
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(reissueRequest.getRefreshToken()))
-            throw new ApiRequestException("잘못된 요청입니다.");
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
 
         // 2. Access Token에서 User email을 가져옴
         Authentication authentication = jwtTokenProvider.getAuthentication(reissueRequest.getAccessToken());
@@ -84,10 +87,10 @@ public class MemberService {
         String refreshToken = (String) redisTemplate.opsForValue().get("RT:" + authentication.getName());
         // 로그아웃 되어 Redis에 RefreshToken이 존재하지 않는 경우 처리
         if (ObjectUtils.isEmpty(refreshToken))
-            throw new ApiRequestException("잘못된 요청입니다.");
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
 
         if (!refreshToken.equals(reissueRequest.getRefreshToken()))
-            throw new ApiRequestException("Refresh Token 정보가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.MISMATCH_REFRESH_TOKEN);
 
         // 4. 새로운 토큰 생성
         MemberResponseDto.TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
@@ -100,23 +103,30 @@ public class MemberService {
     }
 
 
-    public void logout(MemberRequestDto.Logout logoutRequest) {
+    public MemberDto logout(String accessToken) {
+
+        accessToken = accessToken.substring(7);
+
         // 1. Access Token 검증
-        if (!jwtTokenProvider.validateToken(logoutRequest.getAccessToken()))
-            throw new ApiRequestException("잘못된 요청입니다.");
+        if (!jwtTokenProvider.validateToken(accessToken))
+            throw new CustomException(ErrorCode.BAD_REQUEST);
 
         // 2. Access Token에서 User email을 가져옴
-        Authentication authentication = jwtTokenProvider.getAuthentication(logoutRequest.getAccessToken());
+        Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
 
         // 3. Redis에서 해당 User email로 저장된 Refresh Token이 있는지 여부를 확인 후 있을 경우 삭제함
-        if (redisTemplate.opsForValue().get(JwtProperties.REFRESH_TOKEN_KEY + authentication.getName()) != null)
+        if (redisTemplate.opsForValue().get(JwtProperties.REFRESH_TOKEN_KEY + authentication.getName()) != null) {
             // Refresh Token 삭제
             redisTemplate.delete(JwtProperties.REFRESH_TOKEN_KEY + authentication.getName());
 
+        }
+
         // 4. 해당 Access Token 유효시간 가지고 와서 BlackList로 저장하기
-        Long expiration = jwtTokenProvider.getExpiration(logoutRequest.getAccessToken());
+        Long expiration = jwtTokenProvider.getExpiration(accessToken);
         redisTemplate.opsForValue()
-                .set(logoutRequest.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
+                .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+
+        return MemberDto.of(memberRepository.findByEmail(authentication.getName()).orElseThrow(() -> new RuntimeException("회원존재 X")));
     }
 
 }
